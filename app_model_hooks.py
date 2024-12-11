@@ -30,7 +30,7 @@ def hello():
 
 """
 La petición de prueba sería:
-??? REVISAR LA URL --> http://127.0.0.1:5000/api/v1/predict?radio=15&newspaper=60&tv=80
+??? REVISAR LA URL --> http://127.0.0.1:5000/api/v1/predict?SessionsPerWeek=15&AvgSessionDurationMinutes=60&AchievementsUnlocked=80
 """
 
 
@@ -47,9 +47,14 @@ def predict():  # Ligado al endpoint '/api/v1/predict', con el método GET
     if SessionsPerWeek is None or AvgSessionDurationMinutes is None or AchievementsUnlocked is None:
         return "Args empty, the data are not enough to predict, STUPID!!!!"
     else:
-        prediction = model.predict([[float(SessionsPerWeek), float(AvgSessionDurationMinutes), float(AchievementsUnlocked)]])
+        api_get = {'SessionsPerWeek': SessionsPerWeek,
+           'AchievementsUnlocked': AvgSessionDurationMinutes,
+           'AvgSessionDurationMinutes': AchievementsUnlocked}
+        df_get = pd.DataFrame(api_get, index=[0])
+        prediction = model.predict(df_get)
+        prediction[0]
 
-    return jsonify({"predictions": prediction[0]})
+    return jsonify({"predictions": prediction})
 
 
 """
@@ -79,6 +84,7 @@ def retrain():  # Rutarlo al endpoint '/api/v1/retrain/', metodo GET
                 'Medium': 1,
                 'High': 2}
         y_train_encoded = y_train.map(labels)
+        y_test_encoded = y_test.map(labels)
 
         #Preprocessing
         num_pipe = Pipeline([
@@ -97,6 +103,7 @@ def retrain():  # Rutarlo al endpoint '/api/v1/retrain/', metodo GET
                                         solver='saga', random_state=42))])
 
         logreg_pipe.fit(X_train, y_train_encoded)
+        
         pickle.dump(logreg_pipe, open("ad_model.pkl", "wb"))
 
         return f"Model retrained. New evaluation with BALANCED ACCURACY: {logreg_pipe.score()}"
