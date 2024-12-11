@@ -47,15 +47,14 @@ def predict():  # Ligado al endpoint '/api/v1/predict', con el método GET
     if SessionsPerWeek is None or AvgSessionDurationMinutes is None or AchievementsUnlocked is None:
         return "Args empty, the data are not enough to predict, STUPID!!!!"
     else:
-        api_get = {'SessionsPerWeek': SessionsPerWeek,
-           'AchievementsUnlocked': AvgSessionDurationMinutes,
-           'AvgSessionDurationMinutes': AchievementsUnlocked}
+        api_get = {'SessionsPerWeek': float(SessionsPerWeek),
+           'AchievementsUnlocked': float(AvgSessionDurationMinutes),
+           'AvgSessionDurationMinutes': float(AchievementsUnlocked)}
         df_get = pd.DataFrame(api_get, index=[0])
         prediction = model.predict(df_get)
-        prediction[0]
 
-    #return jsonify({"predictions": prediction[0]})
-    return ({'predictions': float(prediction[0])})
+    return jsonify({"predictions": prediction[0]})
+   
 
 
 """
