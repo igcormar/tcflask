@@ -5,9 +5,12 @@ import subprocess
 import numpy as np
 import pandas as pd
 from flask import Flask, jsonify, request
-from sklearn.linear_model import Lasso
-from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error
+from sklearn.compose import ColumnTransformer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import balanced_accuracy_score
 from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import MinMaxScaler
 
 os.chdir(os.path.dirname(__file__))
 
@@ -34,7 +37,7 @@ La petición de prueba sería:
 
 @app.route("/api/v1/predict", methods=["GET"])
 def predict():  # Ligado al endpoint '/api/v1/predict', con el método GET
-    model = pickle.load(open("ad_model.pkl", "rb"))
+    model = pickle.load(open("model.pkl", "rb"))
     SessionsPerWeek = request.args.get("SessionsPerWeek", None)
     AvgSessionDurationMinutes = request.args.get("AvgSessionDurationMinutes", None)
     AchievementsUnlocked = request.args.get("AchievementsUnlocked", None)
@@ -59,26 +62,48 @@ La petición de prueba sería:
 @app.route("/api/v1/retrain", methods=["GET"])
 # Enruta la funcion al endpoint /api/v1/retrain
 def retrain():  # Rutarlo al endpoint '/api/v1/retrain/', metodo GET
-    if os.path.exists("data/online_gaming_behavior_dataset_new.csv"):
-        data = pd.read_csv("data/online_gaming_behavior_dataset_new.csv")
+    if os.path.exists("data/online_gaming_behavior_dataset_nuevos.csv"):
+        data = pd.read_csv("data/online_gaming_behavior_dataset_nuevos.csv")
 
-        X_train, X_test, y_train, y_test = train_test_split(
-            data.drop(columns=["EngagementLevel"]), data["EngagementLevel"], test_size=0.20, random_state=42
-        )
-'''
-        model = Lasso(alpha=6000)
-        model.fit(X_train, y_train)
-        rmse = np.sqrt(mean_squared_error(y_test, model.predict(X_test)))
-        mape = mean_absolute_percentage_error(y_test, model.predict(X_test))
-        model.fit(data.drop(columns=["EngagementLevel"]), data["EngagementLevel"])
-        pickle.dump(model, open("ad_model.pkl", "wb"))
+        num_col = ['SessionsPerWeek', 'AvgSessionDurationMinutes', 'AchievementsUnlocked']
+        target = 'EngagementLevel'
 
-        return f"Model retrained. New evaluation metric RMSE: {str(rmse)}, MAPE: {str(mape)}"
+        train_set, test_set = train_test_split(data, test_size=0.2, stratify=data[target], random_state=42)
+
+        X_train = train_set[num_col]
+        X_test = test_set[num_col]
+
+        y_train = train_set[target]
+        y_test = test_set[target]
+
+        labels = {'Low':0,
+                'Medium': 1,
+                'High': 2}
+        y_train_encoded = y_train.map(labels)
+
+        #Preprocessing
+        num_pipe = Pipeline([
+            ('mmscaler', MinMaxScaler())
+        ])
+
+        preprocessing = ColumnTransformer([
+            ('normalize', num_pipe, num_col)],
+            remainder='passthrough').set_output(transform= 'pandas')
+
+
+        #Entrenamiento
+        logreg_pipe = Pipeline([
+            ('preprocessing', preprocessing),
+            ('modelo', LogisticRegression(class_weight='balanced', C=1.0, max_iter=50, 
+                                        solver='saga', random_state=42))])
+
+        logreg_pipe.fit(X_train, y_train_encoded)
+        pickle.dump(logreg_pipe, open("ad_model.pkl", "wb"))
+
+        return f"Model retrained. New evaluation with BALANCED ACCURACY: {logreg_pipe.score()}"
 
     else:
         return "<h2>New data for retrain NOT FOUND. Nothing done!</h2>"
-
-'''
 
 
 @app.route("/webhook", methods=["POST"])
