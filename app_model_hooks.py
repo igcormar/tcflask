@@ -106,7 +106,7 @@ def retrain():  # Rutarlo al endpoint '/api/v1/retrain/', metodo GET
         
         pickle.dump(logreg_pipe, open("ad_model.pkl", "wb"))
 
-        return f"Model retrained. New evaluation with BALANCED ACCURACY: {logreg_pipe.score()}"
+        return f"Model retrained. New evaluation with BALANCED ACCURACY: {logreg_pipe.score()}" ## !! Revisar
 
     else:
         return "<h2>New data for retrain NOT FOUND. Nothing done!</h2>"
