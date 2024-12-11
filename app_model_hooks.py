@@ -55,7 +55,7 @@ def predict():  # Ligado al endpoint '/api/v1/predict', con el método GET
         prediction[0]
 
     #return jsonify({"predictions": prediction[0]})
-    return ({'predictions': prediction[0]})
+    return ({'predictions': float(prediction[0])})
 
 
 """
