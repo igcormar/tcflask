@@ -19,71 +19,73 @@ app.config["DEBUG"] = True
 # Enruta la landing page (endpoint /)
 @app.route("/", methods=["GET"])
 def hello():
-    return "Bienvenido a mi API del modelo advertising"
+    return "Bienvenido a mi API del modelo endgagementpredictor:\n Puedes acceder a nuestro modelo poniendo los siguientes endpoints:\n - Para reentrenar: \n - Para predecir:"
 
 
 # Enruta la funcion al endpoint /api/v1/predict
 
+# Variables: SessionsPerWeek, AvgSessionDurationMinutes, AchievementsUnlocked
 
 """
 La petición de prueba sería:
-http://127.0.0.1:5000/api/v1/predict?radio=15&newspaper=60&tv=80
+??? REVISAR LA URL --> http://127.0.0.1:5000/api/v1/predict?radio=15&newspaper=60&tv=80
 """
 
 
 @app.route("/api/v1/predict", methods=["GET"])
 def predict():  # Ligado al endpoint '/api/v1/predict', con el método GET
     model = pickle.load(open("ad_model.pkl", "rb"))
-    tv = request.args.get("tv", None)
-    radio = request.args.get("radio", None)
-    newspaper = request.args.get("newspaper", None)
+    SessionsPerWeek = request.args.get("SessionsPerWeek", None)
+    AvgSessionDurationMinutes = request.args.get("AvgSessionDurationMinutes", None)
+    AchievementsUnlocked = request.args.get("AchievementsUnlocked", None)
 
-    print(tv, radio, newspaper)
-    print(type(tv))
+    print(SessionsPerWeek, AvgSessionDurationMinutes, AchievementsUnlocked)
+    # print(type(tv))
 
-    if tv is None or radio is None or newspaper is None:
+    if SessionsPerWeek is None or AvgSessionDurationMinutes is None or AchievementsUnlocked is None:
         return "Args empty, the data are not enough to predict, STUPID!!!!"
     else:
-        prediction = model.predict([[float(tv), float(radio), float(newspaper)]])
+        prediction = model.predict([[float(SessionsPerWeek), float(AvgSessionDurationMinutes), float(AchievementsUnlocked)]])
 
     return jsonify({"predictions": prediction[0]})
 
 
 """
 La petición de prueba sería:
-http://127.0.0.1:5000/api/v1/retrain
+??? REVISAR LA URL --> http://127.0.0.1:5000/api/v1/retrain
 """
 
 
 @app.route("/api/v1/retrain", methods=["GET"])
 # Enruta la funcion al endpoint /api/v1/retrain
 def retrain():  # Rutarlo al endpoint '/api/v1/retrain/', metodo GET
-    if os.path.exists("data/Advertising_new.csv"):
-        data = pd.read_csv("data/Advertising_new.csv")
+    if os.path.exists("data/online_gaming_behavior_dataset_new.csv"):
+        data = pd.read_csv("data/online_gaming_behavior_dataset_new.csv")
 
         X_train, X_test, y_train, y_test = train_test_split(
-            data.drop(columns=["sales"]), data["sales"], test_size=0.20, random_state=42
+            data.drop(columns=["EngagementLevel"]), data["EngagementLevel"], test_size=0.20, random_state=42
         )
-
+'''
         model = Lasso(alpha=6000)
         model.fit(X_train, y_train)
         rmse = np.sqrt(mean_squared_error(y_test, model.predict(X_test)))
         mape = mean_absolute_percentage_error(y_test, model.predict(X_test))
-        model.fit(data.drop(columns=["sales"]), data["sales"])
+        model.fit(data.drop(columns=["EngagementLevel"]), data["EngagementLevel"])
         pickle.dump(model, open("ad_model.pkl", "wb"))
 
         return f"Model retrained. New evaluation metric RMSE: {str(rmse)}, MAPE: {str(mape)}"
+
     else:
         return "<h2>New data for retrain NOT FOUND. Nothing done!</h2>"
 
-
+'''
 
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
     # Ruta al repositorio donde se realizará el pull
-    path_repo = "/home/lucaszv/myFlaskApp"
-    servidor_web = "/var/www/lucaszv_pythonanywhere_com_wsgi.py"
+    path_repo = "/home/tc24/tcflask"
+    servidor_web = "/var/www/tc24_pythonanywhere_com_wsgi.py"
 
     # Comprueba si la solicitud POST contiene datos JSON
     if request.is_json:
