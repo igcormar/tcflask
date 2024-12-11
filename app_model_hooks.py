@@ -13,7 +13,6 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import MinMaxScaler
 
 os.chdir(os.path.dirname(__file__))
-path_base = "/home/tc24/tcflask/"
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -37,7 +36,7 @@ La petición de prueba sería:
 
 @app.route("/api/v1/predict", methods=["GET"])
 def predict():  # Ligado al endpoint '/api/v1/predict', con el método GET
-    model = pickle.load(open(path_base + "model.pkl", "rb"))
+    model = pickle.load(open("model.pkl", "rb"))
     SessionsPerWeek = request.args.get("SessionsPerWeek", None)
     AvgSessionDurationMinutes = request.args.get("AvgSessionDurationMinutes", None)
     AchievementsUnlocked = request.args.get("AchievementsUnlocked", None)
@@ -62,8 +61,8 @@ La petición de prueba sería:
 @app.route("/api/v1/retrain", methods=["GET"])
 # Enruta la funcion al endpoint /api/v1/retrain
 def retrain():  # Rutarlo al endpoint '/api/v1/retrain/', metodo GET
-    if os.path.exists(path_base + "data/online_gaming_behavior_dataset_nuevos.csv"):
-        data = pd.read_csv(path_base + "data/online_gaming_behavior_dataset_nuevos.csv")
+    if os.path.exists("data/online_gaming_behavior_dataset_nuevos.csv"):
+        data = pd.read_csv("data/online_gaming_behavior_dataset_nuevos.csv")
 
         num_col = ['SessionsPerWeek', 'AvgSessionDurationMinutes', 'AchievementsUnlocked']
         target = 'EngagementLevel'
