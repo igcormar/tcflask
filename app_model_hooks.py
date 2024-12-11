@@ -54,7 +54,8 @@ def predict():  # Ligado al endpoint '/api/v1/predict', con el método GET
         prediction = model.predict(df_get)
         prediction[0]
 
-    return jsonify({"predictions": prediction[0]})
+    #return jsonify({"predictions": prediction[0]})
+    return ({'predictions': prediction[0]})
 
 
 """
