@@ -21,7 +21,7 @@ app.config["DEBUG"] = True
 # Enruta la landing page (endpoint /)
 @app.route("/", methods=["GET"])
 def hello():
-    return "<h1><b>Bienvenido a nuestra API del modelo endgagement predictor</b></h1>> \
+    return "<h1><b>Bienvenido a nuestra API del mejor modelo del mundo</b></h1>> \
             <h3><b>Puedes acceder a nuestro modelo poniendo los siguientes endpoints:</b></h3> \
             <p>- Para reentrenar: /api/v1/retrain</p> \
             <p>- Para predecir: /api/v1/predict ---> introduciendo los argumentos 'SessionsPerWeek', 'AvgSessionDurationMinutes' y 'AchievementsUnlocked' </p>"
