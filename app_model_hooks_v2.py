@@ -43,7 +43,6 @@ def predict():  # Ligado al endpoint '/api/v1/predict', con el método GET
     AchievementsUnlocked = request.args.get("AchievementsUnlocked", None)
 
     print(SessionsPerWeek, AvgSessionDurationMinutes, AchievementsUnlocked)
-    # print(type(tv))
 
     if SessionsPerWeek is None or AvgSessionDurationMinutes is None or AchievementsUnlocked is None:
         return "Los argumentos están vacíos, por favor introduce un valor para cada uno"
